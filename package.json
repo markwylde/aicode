@@ -1,0 +1,34 @@
+{
+	"name": "aicode",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"dev": "tsx src/main.ts",
+		"lint": "biome lint",
+		"lint:fix": "biome lint --write",
+		"format": "biome format",
+		"format:fix": "biome format --write",
+		"check": "biome check",
+		"check:fix": "biome check --write",
+		"tidy": "npm run format:fix && npm run lint:fix && npm run check:fix",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"type": "module",
+	"dependencies": {
+		"@biomejs/biome": "^2.1.4",
+		"@markwylde/ailib": "^1.5.0",
+		"@types/minimist": "^1.2.5",
+		"chalk": "^5.5.0",
+		"minimist": "^1.2.8",
+		"pino": "^9.8.0",
+		"tsx": "^4.20.4",
+		"zod": "^4.0.17"
+	},
+	"devDependencies": {
+		"@types/node": "^24.2.1"
+	}
+}
