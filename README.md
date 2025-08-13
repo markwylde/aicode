@@ -20,7 +20,7 @@ Interactive AI coding REPL that connects to OpenRouter models and optional Model
 ## Quick Start
 
 ```bash
-npm install --global aicode
+npm install --global @markwylde/aicode"
 aicode
 ```
 
