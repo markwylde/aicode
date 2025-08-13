@@ -13,43 +13,39 @@ Interactive AI coding REPL that connects to OpenRouter models and optional Model
 
 ## Requirements
 
-- Node.js 18+ (LTS recommended)
+- Node.js 22+
 - An OpenRouter API key in the `OPENROUTER_API_KEY` environment variable
 - (Optional) One or more MCP servers available on your system
 
 ## Quick Start
 
 ```bash
-# Install dependencies
-npm install
-
-# Export your OpenRouter API key
-# macOS/Linux
-export OPENROUTER_API_KEY=your_key_here
-# Windows (PowerShell)
-$Env:OPENROUTER_API_KEY="your_key_here"
-
-# Start the REPL
-npm run dev
+npm install --global aicode
+aicode
 ```
 
-You should see a prompt like:
+Then add your config to ~/.aicode/config.json
 
+```json
+{
+	"ignore": ["node_modules", "dist", "coverage", ".git", ".DS_Store", "*.log"],
+	"model": "qwen/qwen3-32b",
+	"provider": "cerebras",
+	"logLevel": "debug",
+	"logFile": "debug.log",
+	"mcp": [
+		"npx -y @modelcontextprotocol/server-filesystem /Users/someuser/somefolder",
+		"npx -y @modelcontextprotocol/server-sequential-thinking"
+	]
+}
 ```
-AI Code - Type /help for commands or just chat with the AI
-> 
-```
-
-Type a message to chat, or use a command (start with `/`).
 
 ## Usage
 
-Run with `npm run dev` or directly with `tsx`:
+Run the CLI:
 
 ```bash
-npm run dev
-# or
-npx tsx src/main.ts --model qwen/qwen3-32b --provider cerebras
+aicode --model qwen/qwen3-32b --provider cerebras
 ```
 
 CLI flags mirror the config file options (see Configuration):
@@ -65,14 +61,14 @@ Examples:
 
 ```bash
 # Start with model/provider + logging
-npx tsx src/main.ts \
+aicode \
   --model qwen/qwen3-32b \
   --provider cerebras \
   --log-level debug \
   --log-file debug.log
 
 # Start and attach an MCP server
-npx tsx src/main.ts \
+aicode \
   --mcp "npx -y @modelcontextprotocol/server-filesystem ./sandbox" \
   --mcp "npx -y @modelcontextprotocol/server-sequential-thinking"
 ```
@@ -98,7 +94,12 @@ Unrecognized input is treated as a chat message to the AI.
 
 ## Configuration
 
-At startup the app reads `.aicode/config.json` from the current working directory and merges it with CLI flags (CLI wins). Example:
+At startup the app looks for a config file in this order and merges it with CLI flags (CLI wins):
+
+1) Project: `./.aicode/config.json`
+2) Home: `~/.aicode/config.json` (used if no project config)
+
+Example:
 
 ```json
 {
@@ -159,6 +160,31 @@ npm run check
 # Tidy everything (format+lint+check with --write)
 npm run tidy
 ```
+
+Run from source:
+
+```bash
+# Install dependencies
+npm install
+
+# Export your OpenRouter API key
+# macOS/Linux
+export OPENROUTER_API_KEY=your_key_here
+# Windows (PowerShell)
+$Env:OPENROUTER_API_KEY="your_key_here"
+
+# Start locally
+npm run dev
+# or run via Node directly
+node --experimental-strip-types src/main.ts --model qwen/qwen3-32b --provider cerebras
+
+# Start and attach an MCP server
+node --experimental-strip-types src/main.ts \
+  --mcp "npx -y @modelcontextprotocol/server-filesystem ./sandbox" \
+  --mcp "npx -y @modelcontextprotocol/server-sequential-thinking"
+```
+
+Implementation note: The CLI entrypoint is TypeScript executed by Node with `--experimental-strip-types`.
 
 Project layout:
 

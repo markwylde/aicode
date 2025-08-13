@@ -1,14 +1,15 @@
+#!/usr/bin/env -S node --experimental-strip-types
 import type { EventEmitter } from "node:events";
 import path from "node:path";
 import process from "node:process";
 import chalk from "chalk";
 import minimist from "minimist";
-import { type Command, createREPL } from "./service/repl.js";
-import { handleChatMessage } from "./utils/ai.js";
-import { parseConfiguration } from "./utils/config.js";
-import { createLogger, setLogFile, setLogLevel } from "./utils/logger.js";
-import { mcpManager } from "./utils/mcp.js";
-import { printTree } from "./utils/printTree.js";
+import { type Command, createREPL } from "./service/repl.ts";
+import { handleChatMessage } from "./utils/ai.ts";
+import { parseConfiguration } from "./utils/config.ts";
+import { createLogger, setLogFile, setLogLevel } from "./utils/logger.ts";
+import { mcpManager } from "./utils/mcp.ts";
+import { printTree } from "./utils/printTree.ts";
 
 interface AIThread {
 	messages: {
@@ -273,6 +274,10 @@ async function main() {
 	context.mcpServers = config.mcpServers;
 
 	createLogger(config.logLevel, config.logFile);
+
+	if (config.configSource) {
+		console.log(chalk.green(`Config loaded from: ${config.configSource}`));
+	}
 
 	if (config.model) {
 		console.log(chalk.green(`Model set to: ${config.model}`));

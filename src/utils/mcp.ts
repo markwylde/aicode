@@ -3,7 +3,7 @@ import { EventEmitter } from "node:events";
 import { createInterface, type Interface } from "node:readline";
 import chalk from "chalk";
 import { z } from "zod";
-import { getLogger } from "./logger.js";
+import { getLogger } from "./logger.ts";
 
 interface MCPTool {
 	name: string;

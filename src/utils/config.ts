@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import chalk from "chalk";
@@ -20,27 +21,45 @@ interface ParsedConfig {
 	provider?: string;
 	ignorePatterns: string[];
 	mcpServers: string[];
+	configSource?: string;
+}
+
+function findAiCodeConfigPath(
+	startDir: string = process.cwd(),
+): string | undefined {
+	// 1) Project config: <cwd>/.aicode/config.json
+	const projectConfigPath = path.join(startDir, ".aicode", "config.json");
+	if (fs.existsSync(projectConfigPath)) return projectConfigPath;
+
+	// 2) Home config: ~/.aicode/config.json
+	const homeDir = os.homedir?.() || process.env.HOME || "";
+	if (homeDir) {
+		const homeConfigPath = path.join(homeDir, ".aicode", "config.json");
+		if (fs.existsSync(homeConfigPath)) return homeConfigPath;
+	}
+
+	return undefined;
 }
 
 function loadAiCodeConfig(startDir: string = process.cwd()): AiCodeConfig {
-	const configPath = path.join(startDir, ".aicode", "config.json");
+	const configPath = findAiCodeConfigPath(startDir);
+	if (!configPath) return {};
 	try {
-		if (fs.existsSync(configPath)) {
-			const configContent = fs.readFileSync(configPath, "utf-8");
-			return JSON.parse(configContent);
-		}
+		const configContent = fs.readFileSync(configPath, "utf-8");
+		return JSON.parse(configContent);
 	} catch (error) {
 		console.warn(
 			chalk.yellow(
-				`Warning: Could not load .aicode/config.json: ${error.message}`,
+				`Warning: Could not load ${configPath}: ${(error as Error).message}`,
 			),
 		);
+		return {};
 	}
-	return {};
 }
 
 function parseConfiguration(argv: minimist.ParsedArgs): ParsedConfig {
-	const config = loadAiCodeConfig();
+	const source = findAiCodeConfigPath();
+	const config = source ? loadAiCodeConfig() : {};
 
 	const logLevel = argv["log-level"] || config.logLevel || "warn";
 	const logFile = argv["log-file"] || config.logFile;
@@ -70,11 +89,13 @@ function parseConfiguration(argv: minimist.ParsedArgs): ParsedConfig {
 		provider,
 		ignorePatterns,
 		mcpServers,
+		configSource: source,
 	};
 }
 
 export {
 	loadAiCodeConfig,
+	findAiCodeConfigPath,
 	parseConfiguration,
 	type AiCodeConfig,
 	type ParsedConfig,
