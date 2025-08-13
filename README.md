@@ -13,15 +13,31 @@ Interactive AI coding REPL that connects to OpenRouter models and optional Model
 
 ## Requirements
 
-- Node.js 18+ (LTS recommended)
+- Node.js 22+
 - An OpenRouter API key in the `OPENROUTER_API_KEY` environment variable
 - (Optional) One or more MCP servers available on your system
 
 ## Quick Start
 
 ```bash
-npm i -g aicode
+npm install --global aicode
 aicode
+```
+
+Then add your config to ~/.aicode/config.json
+
+```json
+{
+	"ignore": ["node_modules", "dist", "coverage", ".git", ".DS_Store", "*.log"],
+	"model": "qwen/qwen3-32b",
+	"provider": "cerebras",
+	"logLevel": "debug",
+	"logFile": "debug.log",
+	"mcp": [
+		"npx -y @modelcontextprotocol/server-filesystem /Users/someuser/somefolder",
+		"npx -y @modelcontextprotocol/server-sequential-thinking"
+	]
+}
 ```
 
 ## Usage
@@ -78,7 +94,12 @@ Unrecognized input is treated as a chat message to the AI.
 
 ## Configuration
 
-At startup the app reads `.aicode/config.json` from the current working directory and merges it with CLI flags (CLI wins). Example:
+At startup the app looks for a config file in this order and merges it with CLI flags (CLI wins):
+
+1) Project: `./.aicode/config.json`
+2) Home: `~/.aicode/config.json` (used if no project config)
+
+Example:
 
 ```json
 {

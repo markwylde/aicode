@@ -275,6 +275,10 @@ async function main() {
 
 	createLogger(config.logLevel, config.logFile);
 
+	if (config.configSource) {
+		console.log(chalk.green(`Config loaded from: ${config.configSource}`));
+	}
+
 	if (config.model) {
 		console.log(chalk.green(`Model set to: ${config.model}`));
 	}
