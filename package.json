@@ -1,5 +1,6 @@
 {
 	"name": "@markwylde/aicode",
+	"private": false,
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.js",
@@ -17,6 +18,9 @@
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	},
 	"type": "module",
 	"bin": {
 		"aicode": "src/main.ts"
