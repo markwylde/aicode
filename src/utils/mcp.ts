@@ -19,7 +19,11 @@ interface MCPServer {
 	nextId: number;
 	pendingRequests: Map<
 		string | number,
-		{ resolve: (value: unknown) => void; reject: (reason?: unknown) => void }
+		{
+			resolve: (value: unknown) => void;
+			reject: (reason?: unknown) => void;
+			timer?: NodeJS.Timeout;
+		}
 	>;
 	command: string;
 }
@@ -85,18 +89,33 @@ class MCPManager extends EventEmitter {
 
 		this.servers.set(command, server);
 
-		// Initialize connection
-		await this.sendRequest(server, "initialize", {
-			protocolVersion: "2024-11-05",
-			capabilities: {},
-			clientInfo: {
-				name: "aicode",
-				version: "1.0.0",
-			},
-		});
+		try {
+			// Initialize connection (with timeout)
+			await this.sendRequest(
+				server,
+				"initialize",
+				{
+					protocolVersion: "2024-11-05",
+					capabilities: {},
+					clientInfo: {
+						name: "aicode",
+						version: "1.0.0",
+					},
+				},
+				10000,
+			);
 
-		// List available tools
-		await this.listTools(server);
+			// List available tools
+			await this.listTools(server);
+		} catch (error) {
+			// Cleanup on failure
+			try {
+				await this.stopServer(command);
+			} catch {
+				// ignore
+			}
+			throw error;
+		}
 	}
 
 	async stopServer(command: string): Promise<void> {
@@ -133,6 +152,7 @@ class MCPManager extends EventEmitter {
 
 			const pending = server.pendingRequests.get(message.id);
 			if (pending) {
+				if (pending.timer) clearTimeout(pending.timer);
 				if (message.error) {
 					this.logger.info(
 						{
@@ -176,6 +196,7 @@ class MCPManager extends EventEmitter {
 		server: MCPServer,
 		method: string,
 		params?: Record<string, unknown>,
+		timeoutMs: number = 10000,
 	): Promise<unknown> {
 		const id = server.nextId++;
 		const request = {
@@ -197,14 +218,33 @@ class MCPManager extends EventEmitter {
 		);
 
 		return new Promise((resolve, reject) => {
-			server.pendingRequests.set(id, { resolve, reject });
+			const timer = setTimeout(() => {
+				this.logger.error(
+					{ requestId: id, method, server: server.command },
+					"MCP request timed out",
+				);
+				const pending = server.pendingRequests.get(id);
+				if (pending) {
+					server.pendingRequests.delete(id);
+					pending.reject(
+						new Error(`MCP request timed out after ${timeoutMs}ms`),
+					);
+				}
+			}, timeoutMs);
+
+			server.pendingRequests.set(id, { resolve, reject, timer });
 			server.process.stdin?.write(`${JSON.stringify(request)}\n`);
 		});
 	}
 
 	private async listTools(server: MCPServer): Promise<void> {
 		try {
-			const result = await this.sendRequest(server, "tools/list");
+			const result = await this.sendRequest(
+				server,
+				"tools/list",
+				undefined,
+				10000,
+			);
 			server.tools = result.tools || [];
 
 			// Debug log full tool schemas

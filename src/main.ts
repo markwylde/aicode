@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --experimental-strip-types
+#!/usr/bin/env -S npx tsx
 import type { EventEmitter } from "node:events";
 import path from "node:path";
 import process from "node:process";
@@ -295,16 +295,22 @@ async function main() {
 		);
 	}
 
-	// Start MCP servers from config
+	// Start MCP servers from config (non-blocking)
 	for (const mcpCommand of config.mcpServers) {
-		try {
-			await mcpManager.startServer(mcpCommand);
-			console.log(chalk.green(`Started MCP server: ${mcpCommand}`));
-		} catch (error) {
-			console.error(
-				chalk.red(`Failed to start MCP server ${mcpCommand}: ${error.message}`),
-			);
-		}
+		await mcpManager
+			.startServer(mcpCommand)
+			.then(() => {
+				console.log(chalk.green(`Started MCP server: ${mcpCommand}`));
+				// Force recreation to include new tools once ready
+				context.aiThread = null;
+			})
+			.catch((error) => {
+				console.error(
+					chalk.red(
+						`Failed to start MCP server ${mcpCommand}: ${error.message}`,
+					),
+				);
+			});
 	}
 
 	const repl = createREPL(context, commands, {
