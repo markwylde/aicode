@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"dev": "tsx src/main.ts",
+		"dev": "node --experimental-strip-types src/main.ts",
 		"lint": "biome lint",
 		"lint:fix": "biome lint --write",
 		"format": "biome format",
@@ -18,14 +18,16 @@
 	"author": "",
 	"license": "MIT",
 	"type": "module",
+	"bin": {
+		"aicode": "src/main.ts"
+	},
 	"dependencies": {
 		"@biomejs/biome": "^2.1.4",
-		"@markwylde/ailib": "^1.5.0",
+		"@markwylde/ailib": "^1.5.1",
 		"@types/minimist": "^1.2.5",
 		"chalk": "^5.5.0",
 		"minimist": "^1.2.8",
-		"pino": "^9.8.0",
-		"tsx": "^4.20.4",
+		"pino": "^9.9.0",
 		"zod": "^4.0.17"
 	},
 	"devDependencies": {

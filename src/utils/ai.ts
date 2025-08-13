@@ -2,8 +2,8 @@ import type { EventEmitter } from "node:events";
 import process from "node:process";
 import { createThread, OpenRouter } from "@markwylde/ailib";
 import chalk from "chalk";
-import { getLogger } from "./logger.js";
-import { mcpManager } from "./mcp.js";
+import { getLogger } from "./logger.ts";
+import { mcpManager } from "./mcp.ts";
 
 interface AIThread {
 	messages: {
